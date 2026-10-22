@@ -6,10 +6,7 @@ from contextlib import redirect_stderr, redirect_stdout
 import cv2
 import numpy as np
 
-try:
-    import torch
-except Exception:
-    torch = None
+from .device import select_yolo_device
 
 
 class TennisBallTracker:
@@ -45,11 +42,8 @@ class TennisBallTracker:
         self.last_detection = self._empty_detection_state()
         self.missing_frames = 0
 
-        if torch is not None and hasattr(torch, "cuda") and torch.cuda.is_available():
-            self.ultra_device = 0
-        else:
-            self.ultra_device = "cpu"
-        self.ultra_half = self.ultra_device != "cpu"
+        self.ultra_device, self.ultra_half = select_yolo_device()
+        print(f"Initializing YOLO tennis ball model (device: {self.ultra_device})")
         self._fuse_model()
         self._warmup_model()
 

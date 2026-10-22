@@ -97,6 +97,16 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### Apple Silicon GPU acceleration (macOS)
+
+YOLO person, YOLO pose, and tennis ball detection automatically select CUDA, then Apple MPS, then CPU. MPS uses FP32 inference. This does not change the ONNX backend used by RTMPose / RTMO. Startup logs show the selected device.
+
+Check MPS availability in the current PyTorch installation:
+
+```bash
+python -c "import torch; print(torch.backends.mps.is_available())"
+```
+
 ### GPU Acceleration (Windows / NVIDIA)
 
 The default dependencies use CPU builds of PyTorch and ONNX Runtime. For GPU acceleration, first confirm:

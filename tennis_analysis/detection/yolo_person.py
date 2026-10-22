@@ -2,6 +2,8 @@ import os
 from contextlib import redirect_stderr, redirect_stdout
 from importlib.util import find_spec
 
+from .device import select_yolo_device
+
 
 class YOLOPersonDetector:
     """Ultralytics YOLO person detector with optional built-in MOT tracking."""
@@ -17,18 +19,7 @@ class YOLOPersonDetector:
 
         from ultralytics import YOLO
 
-        if device in (None, "auto"):
-            selected = "cpu"
-            try:
-                import torch
-                if torch.cuda.is_available():
-                    selected = 0
-            except Exception:
-                selected = "cpu"
-            self.device = selected
-        else:
-            self.device = device
-        self.half = self.device != "cpu"
+        self.device, self.half = select_yolo_device(device)
 
         tracker_label = self.tracker_config if self.tracker != "none" else "none"
         print(f"Initializing YOLO person model (model: {self.model_path}, device: {self.device}, tracker: {tracker_label})")

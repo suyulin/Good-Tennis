@@ -105,6 +105,16 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### Apple Silicon GPU 加速（macOS）
+
+YOLO 球员检测、YOLO 姿态检测和网球检测会自动按 CUDA → Apple MPS → CPU 的顺序选择可用设备。Apple MPS 使用 FP32 推理；RTMPose / RTMO 的 ONNX 后端不受此设置影响。启动日志会显示所选设备。
+
+可用以下命令检查当前 PyTorch 是否支持 MPS：
+
+```bash
+python -c "import torch; print(torch.backends.mps.is_available())"
+```
+
 ### GPU 加速（Windows / NVIDIA）
 
 默认依赖使用 CPU 版 PyTorch 和 ONNX Runtime。需要 GPU 加速时，先确认：
