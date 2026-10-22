@@ -1,4 +1,4 @@
-﻿from .device import select_yolo_device
+﻿from .device import is_coreml_model, select_yolo_device
 
 
 class YOLOPoseProcessor:
@@ -10,7 +10,7 @@ class YOLOPoseProcessor:
         self.model_path = model_path
         self.conf = conf
         self.inference_name = "YOLO-Pose"
-        self.device, self.half = select_yolo_device(device)
+        self.device, self.half = select_yolo_device(device, model_path=self.model_path)
 
         print(f"Initializing YOLO pose model (model: {self.model_path}, device: {self.device})")
         self.model = YOLO(self.model_path)
@@ -49,7 +49,7 @@ class YOLOPoseProcessor:
             pass
 
     def _warmup_model(self):
-        if self.device == "cpu":
+        if self.device == "cpu" and not is_coreml_model(self.model_path):
             return
         try:
             import logging

@@ -1,10 +1,20 @@
-"""Device selection shared by the PyTorch YOLO detectors."""
+"""Device selection shared by the YOLO detectors."""
+
+from pathlib import Path
 
 
-def select_yolo_device(device="auto"):
-    """Prefer CUDA, then Apple MPS, then CPU; keep explicit selections."""
+def is_coreml_model(model_path):
+    return isinstance(model_path, (str, Path)) and Path(model_path).suffix.lower() in (".mlpackage", ".mlmodel")
+
+
+def select_yolo_device(device="auto", model_path=None):
+    """Use CPU host tensors for CoreML; otherwise prefer CUDA, MPS, CPU."""
     if device in (None, "auto"):
         device = "cpu"
+        # CoreML owns accelerator scheduling. Moving host tensors through MPS
+        # adds transfers before CoreML's NumPy/PIL input conversion.
+        if is_coreml_model(model_path):
+            return device, False
         try:
             import torch
 

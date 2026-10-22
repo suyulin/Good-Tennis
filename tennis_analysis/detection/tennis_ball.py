@@ -6,7 +6,7 @@ from contextlib import redirect_stderr, redirect_stdout
 import cv2
 import numpy as np
 
-from .device import select_yolo_device
+from .device import is_coreml_model, select_yolo_device
 
 
 class TennisBallTracker:
@@ -42,7 +42,8 @@ class TennisBallTracker:
         self.last_detection = self._empty_detection_state()
         self.missing_frames = 0
 
-        self.ultra_device, self.ultra_half = select_yolo_device()
+        self.model_path = getattr(yolo_ball_model, "model", None)
+        self.ultra_device, self.ultra_half = select_yolo_device(model_path=self.model_path)
         print(f"Initializing YOLO tennis ball model (device: {self.ultra_device})")
         self._fuse_model()
         self._warmup_model()
@@ -252,7 +253,7 @@ class TennisBallTracker:
             pass
 
     def _warmup_model(self):
-        if self.ultra_device == "cpu":
+        if self.ultra_device == "cpu" and not is_coreml_model(self.model_path):
             return
         try:
             import logging

@@ -2,6 +2,7 @@ import sys
 import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
+from pathlib import Path
 
 from tennis_analysis.detection.device import select_yolo_device
 
@@ -41,6 +42,15 @@ class DeviceSelectionTests(unittest.TestCase):
             for device, half in (("cpu", False), ("mps", False), ("mps:0", False), (0, True), ("cuda:1", True)):
                 with self.subTest(device=device):
                     self.assertEqual(select_yolo_device(device), (device, half))
+        backend.cuda.is_available.assert_not_called()
+        backend.backends.mps.is_available.assert_not_called()
+
+    def test_coreml_keeps_host_tensors_on_cpu_even_when_gpu_available(self):
+        backend = self.torch_backend(cuda=True, mps=True)
+        with patch.dict(sys.modules, torch=backend):
+            for model in ("weights/model.mlpackage", Path("weights/model.mlmodel")):
+                with self.subTest(model=model):
+                    self.assertEqual(select_yolo_device(model_path=model), ("cpu", False))
         backend.cuda.is_available.assert_not_called()
         backend.backends.mps.is_available.assert_not_called()
 
